@@ -6,7 +6,7 @@
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
   outputs =
-    { nixpkgs, ... }:
+    { self, nixpkgs }:
     let
       goda = import ./lib;
       fixture = import ./tests/fixture { inherit nixpkgs; };
@@ -24,6 +24,7 @@
             goda
             fixture
             ;
+          exported = self.lib;
         }
       );
 

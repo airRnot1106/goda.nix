@@ -4,6 +4,7 @@
   nixpkgs,
   system,
   goda,
+  exported,
   fixture,
 }:
 let
@@ -31,5 +32,16 @@ let
 in
 {
   go-mod = runTests "go-mod" (import ./go-mod.nix { inherit goMod; });
+  mk-flake = runTests "mk-flake" (
+    import ./mk-flake.nix {
+      inherit
+        lib
+        system
+        goda
+        exported
+        fixture
+        ;
+    }
+  );
 }
 // lib.mapAttrs' (name: lib.nameValuePair "fixture-${name}") built.checks.${system}
