@@ -3,11 +3,15 @@
 {
   nixpkgs,
   system,
+  goda,
+  fixture,
 }:
 let
   inherit (nixpkgs) lib;
   pkgs = nixpkgs.legacyPackages.${system};
   goMod = import ../lib/go-mod.nix { inherit lib; };
+
+  built = goda.mkFlake fixture;
 
   runTests =
     name: tests:
@@ -28,3 +32,4 @@ in
 {
   go-mod = runTests "go-mod" (import ./go-mod.nix { inherit goMod; });
 }
+// lib.mapAttrs' (name: lib.nameValuePair "fixture-${name}") built.checks.${system}

@@ -1,0 +1,9 @@
+*goda-fixture.txt*	The fixture plugin of goda.nix
+
+goda_fixture#reverse({text})			*goda_fixture#reverse()*
+		Returns {text} reversed by the binary, through goda.vim.
+
+:GodaFixtureReverse {text}			*:GodaFixtureReverse*
+		Echoes {text} reversed.
+
+ vim:tw=78:ts=8:noet:ft=help:norl:
