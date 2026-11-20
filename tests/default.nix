@@ -43,5 +43,16 @@ in
         ;
     }
   );
+  lazy-names = runTests "lazy-names" (import ./lazy-names.nix { inherit lib goda fixture; });
+  nix-update-positions = runTests "nix-update-positions" (
+    import ./nix-update.nix {
+      inherit
+        lib
+        system
+        goda
+        fixture
+        ;
+    }
+  );
 }
 // lib.mapAttrs' (name: lib.nameValuePair "fixture-${name}") built.checks.${system}
