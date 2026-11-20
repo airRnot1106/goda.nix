@@ -13,6 +13,7 @@ let
   goMod = import ../lib/go-mod.nix { inherit lib; };
 
   built = goda.mkFlake fixture;
+  packages = built.packages.${system};
 
   runTests =
     name: tests:
@@ -29,6 +30,16 @@ let
         fi
         touch $out
       '';
+
+  # A goCheck on the fixture, for a check the fixture does not carry itself.
+  fixtureGoCheck =
+    check:
+    (goda.mkFlake (
+      fixture
+      // {
+        perSystem = _: { outputs = plugin: { checks.it = plugin.goCheck check; }; };
+      }
+    )).checks.${system}.it;
 in
 {
   go-mod = runTests "go-mod" (import ./go-mod.nix { inherit goMod; });
@@ -54,5 +65,22 @@ in
         ;
     }
   );
+  layout = import ./layout.nix { inherit pkgs packages; };
+
+  # The defect goda.nix removes, as a test: the goda.vim on the runtimepath is
+  # the tree Go resolves from go.mod in the binary's own build. helptags adds
+  # doc/tags to the shipped plugin, and nothing else may differ.
+  goda-vim-is-go-mod = fixtureGoCheck {
+    name = "goda-vim-is-go-mod";
+    script = ''
+      resolved=$(go list -m -f '{{.Dir}}' github.com/Shougo/goda.vim)
+      diff -rq "$resolved" ${packages.goda-vim} > difference || true
+      if [ "$(cat difference)" != "Only in ${packages.goda-vim}/doc: tags" ]; then
+        echo "packages.goda-vim is not the goda.vim that go.mod resolves to:" >&2
+        cat difference >&2
+        exit 1
+      fi
+    '';
+  };
 }
 // lib.mapAttrs' (name: lib.nameValuePair "fixture-${name}") built.checks.${system}
