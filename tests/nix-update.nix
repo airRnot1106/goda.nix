@@ -1,6 +1,3 @@
-# What nix-update reads from the binary. It takes the file to edit from the
-# position of src, rejects a version whose position is outside the flake, and
-# replaces the hash of goModules where that file spells it.
 {
   lib,
   system,

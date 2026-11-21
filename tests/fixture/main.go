@@ -1,4 +1,3 @@
-// Command goda-fixture.vim serves the fixture plugin to goda.vim.
 package main
 
 import (

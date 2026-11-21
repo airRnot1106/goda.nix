@@ -1,6 +1,5 @@
-# flake.nix exports mkFlake only. systems is here for flake.nix and the tests.
 let
-  # x86_64-darwin is absent because nixpkgs 26.11 refuses to evaluate it.
+  # x86_64-darwin is absent because nixpkgs 26.11 throws when it evaluates that system.
   systems = [
     "aarch64-darwin"
     "aarch64-linux"
@@ -99,12 +98,8 @@ in
         in
         mergeOutputs built.outputs (settings.outputs built.plugin);
 
-      # A derivation is an attribute set too, and is a leaf here.
       isGroup = value: builtins.isAttrs value && !lib.isDerivation value;
 
-      # The caller's outputs over the defaults, one level deep. checks.lint from
-      # the caller joins checks.unit and checks.e2e. checks.unit from the caller
-      # replaces the default one. formatter, a leaf, is taken as given.
       mergeOutputs =
         defaults: extra:
         defaults
@@ -113,7 +108,6 @@ in
           if isGroup (defaults.${name} or null) && isGroup value then defaults.${name} // value else value
         ) extra;
 
-      # { <system>.<output> } to { <output>.<system> }, the layout a flake has.
       transpose =
         bySystem:
         let

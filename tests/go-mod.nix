@@ -68,8 +68,6 @@ in
     };
   };
 
-  # go install names the program of example.com/goda-x.vim/v2 goda-x.vim, and
-  # the program of example.com/goda-x.vim/v1 v1.
   testMajorVersionSuffixIsNotTheName = {
     expr = map goMod.baseName [
       "example.com/goda-x.vim/v2"

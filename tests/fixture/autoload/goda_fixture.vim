@@ -4,7 +4,6 @@ function! s:start() abort
   call goda#start(s:root . '/bin/goda-fixture')
 endfunction
 
-" Returns a:text reversed by the binary.
 function! goda_fixture#reverse(text) abort
   if !goda#is_running('fixture')
     call goda#register('fixture', function('s:start'),

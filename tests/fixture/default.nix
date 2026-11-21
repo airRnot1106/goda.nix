@@ -1,7 +1,3 @@
-# The arguments the fixture plugin passes to mkFlake, as a plugin's flake.nix
-# writes them. Each setting is used once.
-#
-# `nix-update --flake fixture --version=skip` rewrites vendorHash here.
 { nixpkgs }:
 {
   inherit nixpkgs;
@@ -39,8 +35,6 @@
             '';
           };
 
-          # The plugin as a user installs it: the shipped binary, started by
-          # the shipped Vim script, through the shipped goda.vim.
           runtimepath =
             pkgs.runCommand "goda-fixture-runtimepath"
               {
@@ -62,8 +56,6 @@
                 EOF
                 for editor in "vim -u NONE -N -n -i NONE -es -S" "nvim -u NONE -n -i NONE --headless -S"; do
                   export ANSWER=$PWD/answer-''${editor%% *}
-                  # Without a terminal, an editor that fails to quit waits for
-                  # input and the build never ends.
                   timeout 60 $editor driver.vim < /dev/null || true
                   if [ "$(cat "$ANSWER")" != adog ]; then
                     echo "''${editor%% *}: the shipped plugin answered: $(cat "$ANSWER")" >&2

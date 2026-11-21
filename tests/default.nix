@@ -1,5 +1,3 @@
-# goda.nix's checks. None of them needs a plugin repository, so a goda.nix
-# change is verified before any plugin updates its input.
 {
   nixpkgs,
   system,
@@ -31,7 +29,6 @@ let
         touch $out
       '';
 
-  # A goCheck on the fixture, for a check the fixture does not carry itself.
   fixtureGoCheck =
     check:
     (goda.mkFlake (
@@ -67,9 +64,7 @@ in
   );
   layout = import ./layout.nix { inherit pkgs packages; };
 
-  # The defect goda.nix removes, as a test: the goda.vim on the runtimepath is
-  # the tree Go resolves from go.mod in the binary's own build. helptags adds
-  # doc/tags to the shipped plugin, and nothing else may differ.
+  # helptags adds doc/tags to the shipped plugin, and nothing else may differ.
   goda-vim-is-go-mod = fixtureGoCheck {
     name = "goda-vim-is-go-mod";
     script = ''

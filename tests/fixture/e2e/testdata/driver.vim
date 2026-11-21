@@ -1,5 +1,3 @@
-" Reverses a word through the binary and writes what came back to
-" $GODA_FIXTURE_E2E_OUT.
 set encoding=utf-8
 let &runtimepath = join(map([$GODA_FIXTURE_E2E_PLUGIN, $GODA_FIXTURE_E2E_GODA], {_, dir -> escape(dir, ',')}) + [&runtimepath], ',')
 

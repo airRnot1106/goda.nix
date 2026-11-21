@@ -1,5 +1,3 @@
-// Package e2e runs the fixture plugin in real editors, against the goda.vim
-// that goda.nix passes in GODA_FIXTURE_E2E_GODA.
 package e2e
 
 import (
@@ -25,8 +23,6 @@ type result struct {
 	Reversed string `json:"reversed"`
 }
 
-// install returns a copy of the plugin with its binary at bin/goda-fixture,
-// where goda.nix puts it and where autoload/goda_fixture.vim looks.
 func install(t *testing.T, root string) string {
 	t.Helper()
 	dir := t.TempDir()

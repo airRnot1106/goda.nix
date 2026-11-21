@@ -1,5 +1,3 @@
-# `nix flake show` reads the attribute names of every system and builds
-# nothing. A system that nixpkgs refuses to evaluate must still list its names.
 {
   lib,
   goda,

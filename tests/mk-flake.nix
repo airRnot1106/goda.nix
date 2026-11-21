@@ -1,4 +1,3 @@
-# What mkFlake evaluates to. Building is left to the fixture's checks.
 {
   lib,
   system,
@@ -197,7 +196,6 @@ in
     ];
   };
 
-  # Each value would build if goda.nix let it through.
   testBinaryMayNotSetThePin = {
     expr =
       lib.mapAttrs

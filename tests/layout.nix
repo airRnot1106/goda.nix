@@ -1,4 +1,3 @@
-# The files a plugin ships, checked on the fixture's built packages.
 { pkgs, packages }:
 let
   plugin = packages.vim-plugin;

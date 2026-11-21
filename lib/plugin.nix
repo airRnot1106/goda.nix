@@ -1,24 +1,5 @@
-# One goda plugin on one system. Everything is derived from the binary's
-# goModules: each module tree is read from it, and every check reuses it. That
-# shared download is what makes go.mod the only pin.
 { lib, goMod }:
 {
-  /**
-    build :: Args -> { plugin :: Plugin; outputs :: PerSystemOutputs; }
-
-    Args = {
-      pkgs
-      mod         # goMod.read src
-      pinned      # { src, version, vendorHash }, the caller's own attributes
-      vimModules  # [ modulePath ]
-      binary      # extra buildGoModule attributes from the caller
-      check       # extra attributes for every check from the caller
-    }
-
-    plugin is what the caller's outputs function receives. outputs are the
-    defaults that mkFlake merges the caller's outputs over. Their attribute
-    names do not depend on pkgs.
-  */
   build =
     {
       pkgs,
@@ -85,8 +66,6 @@
           pname = mod.name;
           proxyVendor = true;
           env = binaryEnv;
-          # go install names the program after the module path, goda-xx.vim.
-          # The plugin's Vim script starts bin/goda-xx.
           installPhase = ''
             runHook preInstall
             install -Dm755 "$GOPATH/bin/${mod.baseName}" "$out/bin/${mod.name}"
@@ -98,7 +77,6 @@
         }
       );
 
-      # A change to the plugin's code does not rebuild the module trees.
       goModFiles = lib.fileset.toSource {
         root = pinned.src;
         fileset = lib.fileset.unions [
@@ -107,8 +85,6 @@
         ];
       };
 
-      # The go command resolves the module against the binary's module
-      # download, so a replace directive moves the Vim side with the Go side.
       moduleTree =
         modulePath:
         pkgs.runCommand "${goMod.baseName modulePath}-source" { nativeBuildInputs = [ goBinary.go ]; } ''
@@ -128,8 +104,6 @@
         modulePath:
         pkgs.vimUtils.buildVimPlugin {
           pname = goMod.baseName modulePath;
-          # go.mod is the one place that states the version, and a replace
-          # directive would make a copy of it here wrong.
           version = "gomod";
           src = moduleTree modulePath;
         }
@@ -165,8 +139,6 @@
           );
         };
         dependencies = builtins.attrValues modules;
-        # Whatever the binary installs sits at the plugin root, as `nix build`
-        # lays it out under result/.
         preInstall = ''
           cp -r ${goBinary}/. .
         '';

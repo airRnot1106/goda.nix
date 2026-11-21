@@ -1,8 +1,6 @@
 {
   description = "Build a goda.vim plugin flake from a plugin repository, with go.mod as the only pin of goda.vim";
 
-  # Only the self-tests build with this nixpkgs. mkFlake builds with the
-  # nixpkgs its caller passes in.
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
   outputs =
@@ -28,7 +26,6 @@
         }
       );
 
-      # `nix-update --flake fixture --version=skip` targets this package.
       packages = forAllSystems (system: {
         fixture = (goda.mkFlake fixture).packages.${system}.goda-fixture;
       });
