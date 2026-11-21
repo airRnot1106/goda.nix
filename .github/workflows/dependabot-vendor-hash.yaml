@@ -1,0 +1,66 @@
+name: Dependabot vendorHash
+
+on:
+  pull_request:
+    paths:
+      - tests/fixture/go.mod
+      - tests/fixture/go.sum
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  HASH_FILE: tests/fixture/default.nix
+
+jobs:
+  update:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          persist-credentials: false
+      - uses: nixbuild/nix-quick-install-action@v35
+      - uses: nix-community/cache-nix-action@v7.0.2
+        with:
+          primary-key: nix-${{ runner.os }}-${{ hashFiles('**/*.nix', '**/flake.lock') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-
+          save: false
+      - id: hash
+        shell: bash
+        run: |
+          nix run --inputs-from . nixpkgs#nix-update -- --flake fixture --version=skip
+          git diff --quiet -- "$HASH_FILE" || echo 'stale=true' >>"$GITHUB_OUTPUT"
+      # A push with GITHUB_TOKEN starts no workflow run, so CI would not see the new commit.
+      - if: steps.hash.outputs.stale
+        id: app-token
+        uses: actions/create-github-app-token@v3.4.0
+        with:
+          client-id: ${{ vars.CI_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.CI_BOT_PRIVATE_KEY }}
+          permission-contents: write
+      # Commits created through the API are signed by GitHub.
+      - if: steps.hash.outputs.stale
+        shell: bash
+        run: |
+          parent=$(git rev-parse HEAD)
+          base_tree=$(gh api "repos/$REPO/git/commits/$parent" --jq .tree.sha)
+          blob=$(gh api "repos/$REPO/git/blobs" \
+            -f "content=$(base64 -w0 <"$HASH_FILE")" -f encoding=base64 --jq .sha)
+          tree=$(jq -n --arg base "$base_tree" --arg path "$HASH_FILE" --arg sha "$blob" \
+            '{base_tree: $base, tree: [{path: $path, mode: "100644", type: "blob", sha: $sha}]}' |
+            gh api "repos/$REPO/git/trees" --input - --jq .sha)
+          commit=$(gh api "repos/$REPO/git/commits" \
+            -f 'message=build(deps): update the vendorHash of the fixture' \
+            -f "tree=$tree" -f "parents[]=$parent" --jq .sha)
+          gh api -X PATCH "repos/$REPO/git/refs/heads/$BRANCH" -f "sha=$commit"
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          REPO: ${{ github.repository }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
