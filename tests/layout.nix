@@ -11,5 +11,6 @@ pkgs.runCommand "goda-nix-layout" { } ''
   for leak in go.mod go.sum main.go internal e2e default.nix; do
     [ ! -e ${plugin}/$leak ] || fail "$leak leaked into the Vim plugin"
   done
+  [ -f ${plugin.godaVim}/autoload/goda.vim ] || fail "godaVim has no autoload/goda.vim"
   touch $out
 ''

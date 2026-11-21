@@ -28,6 +28,11 @@ in
     };
   };
 
+  testThePluginDependsOnItsGodaVim = {
+    expr = map (dependency: dependency.drvPath) (build { }).dependencies;
+    expected = [ (build { }).godaVim.drvPath ];
+  };
+
   testToolchainFollowsGoMod = {
     expr = (binaryOf { }).go.drvPath;
     expected = pkgs.go_1_26.drvPath;

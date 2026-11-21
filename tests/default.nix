@@ -60,6 +60,10 @@ in
   );
   layout = import ./layout.nix { inherit pkgs plugin; };
 
+  goda-vim-is-go-mod = goTest "goda-vim-is-go-mod" [ ] ''
+    diff -r "$(go list -m -f '{{.Dir}}' github.com/Shougo/goda.vim)" ${plugin.godaVim.src}
+  '';
+
   fixture-unit = goTest "unit" [ ] "go test ./internal/...";
   fixture-e2e = goTest "e2e" [
     pkgs.vim

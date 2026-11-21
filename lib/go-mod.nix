@@ -1,5 +1,7 @@
 { lib }:
 rec {
+  godaVim = "github.com/Shougo/goda.vim";
+
   read =
     src:
     let

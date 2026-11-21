@@ -11,14 +11,15 @@
 
     Returns the Vim plugin: every Vim runtime directory at the root of src,
     LICENSE, and whatever the binary installs, so the binary is at
-    bin/<name>. Its `binary` attribute is the Go binary.
+    bin/<name>. It depends on goda.vim. Its `binary` attribute is the Go
+    binary, and its `godaVim` attribute is goda.vim as a Vim plugin.
 
     The plugin name and the Go toolchain come from go.mod. pname, proxyVendor,
     installPhase, and meta.mainProgram are set here, and passing one throws.
 
-    goda.vim is not part of the result. The binary is built with proxyVendor,
-    so its module download holds whole modules, and a test that runs in a
-    check made from the binary finds goda.vim's Vim files with
+    godaVim is the module that go.mod resolves github.com/Shougo/goda.vim to,
+    taken from the module download the binary is built from. A test that runs
+    in a check made from the binary finds the same directory with
     `go list -m -f '{{.Dir}}' github.com/Shougo/goda.vim`.
   */
   buildGodaPlugin =
@@ -79,6 +80,25 @@
         }
       );
 
+      versionIsInGoMod = "gomod";
+
+      godaVim = pkgs.vimUtils.buildVimPlugin {
+        pname = "goda.vim";
+        version = versionIsInGoMod;
+        src = pkgs.runCommand "goda.vim-source" { nativeBuildInputs = [ binary.go ]; } ''
+          export GOPROXY=file://${binary.goModules} GOSUMDB=off GOTOOLCHAIN=local
+          export HOME=$TMPDIR GOPATH=$TMPDIR/go
+          # The go command ignores a go.mod in the system temp root, which the
+          # build directory is.
+          mkdir module && cd module
+          cp ${src + "/go.mod"} go.mod
+          cp ${src + "/go.sum"} go.sum
+          go mod download ${goMod.godaVim}
+          cp -r "$(go list -m -f '{{.Dir}}' ${goMod.godaVim})" $out
+          chmod -R u+w $out
+        '';
+      };
+
       runtimeNames = [
         "LICENSE"
         "after"
@@ -109,6 +129,7 @@
       preInstall = ''
         cp -r ${binary}/. .
       '';
-      passthru = { inherit binary; };
+      dependencies = [ godaVim ];
+      passthru = { inherit binary godaVim; };
     };
 }
