@@ -88,6 +88,9 @@ in
           built = plugin.build {
             pkgs = nixpkgs.legacyPackages.${system};
             inherit mod vimModules;
+            # nix-update edits the file where src and version were written.
+            # Taking them from args keeps that the caller's flake.nix.
+            # `inherit src version vendorHash` would make it this file.
             pinned = builtins.intersectAttrs {
               src = null;
               version = null;
