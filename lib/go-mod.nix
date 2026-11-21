@@ -6,10 +6,13 @@ rec {
     src:
     let
       file = src + "/go.mod";
-      parsed = parse (builtins.readFile file);
+      parsed = moduleAndGoLines (builtins.readFile file);
       need =
         what: value:
-        if value == null then throw "goda.nix: ${toString file} has no ${what} line" else value;
+        if value == null then
+          throw "goda.nix: ${toString file} has no single-line ${what} directive"
+        else
+          value;
       modulePath = need "module" parsed.module;
     in
     {
@@ -19,7 +22,7 @@ rec {
       go = goVersion (need "go" parsed.go);
     };
 
-  parse =
+  moduleAndGoLines =
     text:
     let
       lines = map (line: lib.trim (builtins.head (lib.splitString "//" line))) (
@@ -33,7 +36,7 @@ rec {
         if found == null then null else builtins.head found;
     in
     {
-      module = first ''module[[:space:]]+"?([^"[:space:]]+)"?'';
+      module = first ''module[[:space:]]+"?([^"([:space:]]+)"?'';
       go = first "go[[:space:]]+([0-9][^[:space:]]*)";
     };
 

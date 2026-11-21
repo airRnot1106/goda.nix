@@ -4,7 +4,7 @@ let
 in
 {
   testModuleAndGo = {
-    expr = goMod.parse ''
+    expr = goMod.moduleAndGoLines ''
       module github.com/airRnot1106/goda-ks.vim
 
       go 1.26
@@ -18,7 +18,7 @@ in
   };
 
   testRequireBlockIsIgnored = {
-    expr = goMod.parse ''
+    expr = goMod.moduleAndGoLines ''
       module github.com/airRnot1106/goda-wakachi.vim
 
       go 1.26
@@ -37,8 +37,13 @@ in
   };
 
   testCommentAfterModule = {
-    expr = (goMod.parse "module github.com/x/goda-x.vim // the plugin\ngo 1.26\n").module;
+    expr = (goMod.moduleAndGoLines "module github.com/x/goda-x.vim // the plugin\ngo 1.26\n").module;
     expected = "github.com/x/goda-x.vim";
+  };
+
+  testModuleBlockIsNotAPath = {
+    expr = (goMod.moduleAndGoLines "module (\n\tgithub.com/x/goda-x.vim\n)\ngo 1.26\n").module;
+    expected = null;
   };
 
   testGoWithPatch = {
