@@ -2,6 +2,9 @@
 
 Nix flake that exports `lib.buildGodaPlugin`, a helper for building [goda.vim](https://github.com/Shougo/goda.vim) plugins. It uses `buildGoModule` to compile the Go binary and `buildVimPlugin` to bundle it for Vim and Neovim.
 
+> [!WARNING]
+> This project is under active development and is not yet stable. The API may change without notice.
+
 ## Usage
 
 ```nix
