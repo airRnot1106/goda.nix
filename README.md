@@ -45,7 +45,7 @@ For a plugin whose module path ends in `goda-xx.vim`, the call returns these out
 
 goda.nix reads these facts from the repository. No argument overrides them.
 
-- **The name comes from the module path.** `module github.com/you/goda-xx.vim` in `go.mod` gives the name `goda-xx`. The name is the last element of the module path without `.vim`. A major version suffix such as `/v2` is skipped, as the go command skips it. The binary is `bin/goda-xx`, the package is `packages.<system>.goda-xx`, and the check variables start with `GODA_XX_E2E_`.
+- **The name comes from the module path.** `module github.com/you/goda-xx.vim` in `go.mod` gives the name `goda-xx`. The name is the last element of the module path without `.vim`. goda.nix skips a major version suffix such as `/v2`, as the go command does. The binary is `bin/goda-xx`, the package is `packages.<system>.goda-xx`, and the check variables start with `GODA_XX_E2E_`.
 - **The Go toolchain comes from the `go` line.** `go 1.26` and `go 1.26.0` both select `buildGo126Module`. If your nixpkgs has no toolchain for that version, evaluation fails with a message that says to raise the `go` line. goda.nix does not fall back to another Go.
 - **`go.mod` is at the root of `src`, and the root package is the binary.** `go.mod` requires `github.com/Shougo/goda.vim`.
 - **The Vim script starts `bin/<name>` under the plugin root.**
@@ -115,7 +115,7 @@ A function from the `plugin` record to extra per-system flake outputs. goda.nix 
 
 - `checks.lint = ...;` joins `checks.unit` and `checks.e2e`.
 - `checks.unit = ...;` replaces the default `unit` check.
-- An output that goda.nix does not define, such as `apps` or `formatter`, is added as given.
+- goda.nix adds an output that it does not define, such as `apps` or `formatter`, as given.
 
 `binary` and `check` cannot use the `plugin` record. Only `outputs` can.
 
