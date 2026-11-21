@@ -1,5 +1,5 @@
 {
-  description = "Build a goda.vim plugin flake from a plugin repository, with go.mod as the only pin of goda.vim";
+  description = "Build a goda.vim plugin: the Go binary and the Vim plugin that holds it";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
@@ -7,27 +7,31 @@
     { self, nixpkgs }:
     let
       goda = import ./lib;
-      fixture = import ./tests/fixture { inherit nixpkgs; };
-      forAllSystems = nixpkgs.lib.genAttrs goda.systems;
+      forAllSystems = nixpkgs.lib.genAttrs [
+        "aarch64-darwin"
+        "aarch64-linux"
+        "x86_64-linux"
+      ];
     in
     {
-      lib = { inherit (goda) mkFlake; };
+      lib = { inherit (goda) buildGodaPlugin; };
 
       checks = forAllSystems (
         system:
         import ./tests {
-          inherit
-            nixpkgs
-            system
-            goda
-            fixture
-            ;
+          inherit nixpkgs system goda;
           exported = self.lib;
         }
       );
 
-      packages = forAllSystems (system: {
-        fixture = (goda.mkFlake fixture).packages.${system}.goda-fixture;
-      });
+      packages = forAllSystems (
+        system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+        in
+        {
+          fixture = (goda.buildGodaPlugin pkgs (import ./tests/fixture { inherit pkgs; })).binary;
+        }
+      );
     };
 }

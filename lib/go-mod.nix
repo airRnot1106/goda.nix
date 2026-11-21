@@ -1,7 +1,5 @@
 { lib }:
 rec {
-  godaVim = "github.com/Shougo/goda.vim";
-
   read =
     src:
     let
@@ -65,10 +63,4 @@ rec {
         major = builtins.elemAt parts 0;
         minor = builtins.elemAt parts 1;
       };
-
-  envStem =
-    nameOrPath:
-    lib.toUpper (
-      builtins.replaceStrings [ "-" "." ] [ "_" "_" ] (lib.removeSuffix ".vim" (baseName nameOrPath))
-    );
 }

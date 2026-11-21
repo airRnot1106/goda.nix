@@ -3,15 +3,14 @@
   system,
   goda,
   exported,
-  fixture,
 }:
 let
   inherit (nixpkgs) lib;
   pkgs = nixpkgs.legacyPackages.${system};
   goMod = import ../lib/go-mod.nix { inherit lib; };
 
-  built = goda.mkFlake fixture;
-  packages = built.packages.${system};
+  fixture = import ./fixture { inherit pkgs; };
+  plugin = goda.buildGodaPlugin pkgs fixture;
 
   runTests =
     name: tests:
@@ -29,53 +28,41 @@ let
         touch $out
       '';
 
-  fixtureGoCheck =
-    check:
-    (goda.mkFlake (
-      fixture
-      // {
-        perSystem = _: { outputs = plugin: { checks.it = plugin.goCheck check; }; };
-      }
-    )).checks.${system}.it;
+  goTest =
+    name: nativeBuildInputs: command:
+    plugin.binary.overrideAttrs (prev: {
+      name = "goda-fixture-${name}";
+      doCheck = true;
+      nativeBuildInputs = prev.nativeBuildInputs ++ nativeBuildInputs;
+      checkPhase = ''
+        runHook preCheck
+        export HOME=$TMPDIR
+        ${command}
+        runHook postCheck
+      '';
+      installPhase = "touch $out";
+    });
 in
 {
   go-mod = runTests "go-mod" (import ./go-mod.nix { inherit goMod; });
-  mk-flake = runTests "mk-flake" (
-    import ./mk-flake.nix {
+  build-goda-plugin = runTests "build-goda-plugin" (
+    import ./build-goda-plugin.nix {
       inherit
-        lib
-        system
+        pkgs
         goda
         exported
         fixture
         ;
     }
   );
-  lazy-names = runTests "lazy-names" (import ./lazy-names.nix { inherit lib goda fixture; });
   nix-update-positions = runTests "nix-update-positions" (
-    import ./nix-update.nix {
-      inherit
-        lib
-        system
-        goda
-        fixture
-        ;
-    }
+    import ./nix-update.nix { inherit lib plugin; }
   );
-  layout = import ./layout.nix { inherit pkgs packages; };
+  layout = import ./layout.nix { inherit pkgs plugin; };
 
-  # helptags adds doc/tags to the shipped plugin, and nothing else may differ.
-  goda-vim-is-go-mod = fixtureGoCheck {
-    name = "goda-vim-is-go-mod";
-    script = ''
-      resolved=$(go list -m -f '{{.Dir}}' github.com/Shougo/goda.vim)
-      diff -rq "$resolved" ${packages.goda-vim} > difference || true
-      if [ "$(cat difference)" != "Only in ${packages.goda-vim}/doc: tags" ]; then
-        echo "packages.goda-vim is not the goda.vim that go.mod resolves to:" >&2
-        cat difference >&2
-        exit 1
-      fi
-    '';
-  };
+  fixture-unit = goTest "unit" [ ] "go test ./internal/...";
+  fixture-e2e = goTest "e2e" [
+    pkgs.vim
+    pkgs.neovim
+  ] "go test -v -count=1 ./e2e";
 }
-// lib.mapAttrs' (name: lib.nameValuePair "fixture-${name}") built.checks.${system}

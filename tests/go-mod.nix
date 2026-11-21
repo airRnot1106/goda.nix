@@ -64,12 +64,12 @@ in
 
   testNames = {
     expr = {
-      inherit (goMod.read ./cases/goda-ks) modulePath baseName name;
+      inherit (goMod.read ./fixture) modulePath baseName name;
     };
     expected = {
-      modulePath = "github.com/airRnot1106/goda-ks.vim";
-      baseName = "goda-ks.vim";
-      name = "goda-ks";
+      modulePath = "github.com/airRnot1106/goda-fixture.vim";
+      baseName = "goda-fixture.vim";
+      name = "goda-fixture";
     };
   };
 
@@ -89,20 +89,5 @@ in
   testNoGoLine = {
     expr = fails (goMod.read ./cases/no-go-line).go;
     expected = true;
-  };
-
-  testEnvStemOfName = {
-    expr = goMod.envStem "goda-wakachi";
-    expected = "GODA_WAKACHI";
-  };
-
-  testEnvStemOfGodaVim = {
-    expr = goMod.envStem "github.com/Shougo/goda.vim";
-    expected = "GODA";
-  };
-
-  testEnvStemOfDependency = {
-    expr = goMod.envStem "github.com/airRnot1106/goda-ks.vim";
-    expected = "GODA_KS";
   };
 }

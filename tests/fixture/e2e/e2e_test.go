@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -38,10 +39,11 @@ func install(t *testing.T, root string) string {
 }
 
 func TestEditors(t *testing.T) {
-	goda := os.Getenv("GODA_FIXTURE_E2E_GODA")
-	if goda == "" {
-		t.Fatal("GODA_FIXTURE_E2E_GODA is not set")
+	list, err := exec.Command("go", "list", "-m", "-f", "{{.Dir}}", "github.com/Shougo/goda.vim").Output()
+	if err != nil {
+		t.Fatal(err)
 	}
+	goda := strings.TrimSpace(string(list))
 	root, err := filepath.Abs("..")
 	if err != nil {
 		t.Fatal(err)
@@ -58,6 +60,7 @@ func TestEditors(t *testing.T) {
 			cmd := exec.CommandContext(ctx, editor.command[0], append(editor.command[1:], "e2e/testdata/driver.vim")...)
 			cmd.Dir = root
 			cmd.Env = append(os.Environ(),
+				"GODA_FIXTURE_E2E_GODA="+goda,
 				"GODA_FIXTURE_E2E_PLUGIN="+plugin,
 				"GODA_FIXTURE_E2E_OUT="+out,
 			)

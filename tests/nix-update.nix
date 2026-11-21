@@ -1,26 +1,20 @@
-{
-  lib,
-  system,
-  goda,
-  fixture,
-}:
+{ lib, plugin }:
 let
-  binary = (goda.mkFlake fixture).packages.${system}.goda-fixture;
   callersFile = toString ./fixture/default.nix;
 in
 {
   testSrcKeepsTheCallersPosition = {
-    expr = (builtins.unsafeGetAttrPos "src" binary).file;
+    expr = (builtins.unsafeGetAttrPos "src" plugin.binary).file;
     expected = callersFile;
   };
 
   testVersionKeepsTheCallersPosition = {
-    expr = (builtins.unsafeGetAttrPos "version" binary).file;
+    expr = (builtins.unsafeGetAttrPos "version" plugin.binary).file;
     expected = callersFile;
   };
 
   testTheCallersFileSpellsTheHashOfGoModules = {
-    expr = lib.hasInfix binary.goModules.outputHash (builtins.readFile ./fixture/default.nix);
+    expr = lib.hasInfix plugin.binary.goModules.outputHash (builtins.readFile ./fixture/default.nix);
     expected = true;
   };
 }
