@@ -35,8 +35,9 @@ Nix flake that exports `lib.buildGodaPlugin`, a helper for building [goda.vim](h
 
 For a repository whose Go module path ends in `goda-xx.vim`:
 
-- `plugin` is the Vim plugin. It holds `LICENSE`, the Vim runtime directories of the repository (`autoload`, `plugin`, `doc`, `lua`, and so on), and the binary at `bin/goda-xx`.
+- `plugin` is the Vim plugin. It holds `LICENSE`, the Vim runtime directories of the repository (`autoload`, `plugin`, `doc`, `lua`, and so on), and the binary at `bin/goda-xx`. It depends on `plugin.godaVim`, so installing it installs goda.vim too.
 - `plugin.binary` is the Go binary alone, at `bin/goda-xx`.
+- `plugin.godaVim` is goda.vim as a Vim plugin, at the version in `go.mod`.
 
 ## Arguments
 
