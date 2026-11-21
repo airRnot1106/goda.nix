@@ -100,11 +100,13 @@
           chmod -R u+w $out
         '';
 
+      versionIsInGoMod = "gomod";
+
       modules = lib.genAttrs ([ goMod.godaVim ] ++ vimModules) (
         modulePath:
         pkgs.vimUtils.buildVimPlugin {
           pname = goMod.baseName modulePath;
-          version = "gomod";
+          version = versionIsInGoMod;
           src = moduleTree modulePath;
         }
       );

@@ -96,11 +96,11 @@ in
             inherit (settings) binary check;
           };
         in
-        mergeOutputs built.outputs (settings.outputs built.plugin);
+        mergeOneLevel built.outputs (settings.outputs built.plugin);
 
       isGroup = value: builtins.isAttrs value && !lib.isDerivation value;
 
-      mergeOutputs =
+      mergeOneLevel =
         defaults: extra:
         defaults
         // builtins.mapAttrs (
